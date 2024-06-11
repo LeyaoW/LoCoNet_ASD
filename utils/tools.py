@@ -88,7 +88,7 @@ def preprocess_AVA(args):
     #     └── trainval
     # ```
 
-    download_csv(args)    # Take 1 minute
+    #download_csv(args)    # Take 1 minute
     download_videos(args)    # Take 6 hours
     extract_audio(args)    # Take 1 hour
     extract_audio_clips(args)    # Take 3 minutes
@@ -107,35 +107,40 @@ def download_csv(args):
 
 def download_videos(args):
     # Take 6 hours to download the original movies, follow this repository: https://github.com/cvdfoundation/ava-dataset
-    for dataType in ['trainval', 'test']:
+    #for dataType in ['trainval', 'test']:
+    for dataType in ['test']:
+        # open "csv/test_file_list.txt" and "csv/trainval_file_list.txt"
         fileList = open('%s/%s_file_list.txt' % (args.trialPathAVA, dataType)).read().splitlines()
         outFolder = '%s/%s' % (args.visualOrigPathAVA, dataType)
         for fileName in fileList:
             cmd = "wget -P %s https://s3.amazonaws.com/ava-dataset/%s/%s" % (outFolder, dataType,
                                                                              fileName)
             subprocess.call(cmd, shell=True, stdout=None)
+            
 
 
 def extract_audio(args):
     # Take 1 hour to extract the audio from movies
-    for dataType in ['trainval', 'test']:
-        inpFolder = '%s/%s' % (args.visualOrigPathAVA, dataType)
-        outFolder = '%s/%s' % (args.audioOrigPathAVA, dataType)
+    #for dataType in ['trainval', 'test']:
+    for dataType in ['test']:
+        inpFolder = '%s/%s' % (args.visualOrigPathAVA, dataType) # "orig_videos/trainval" and "orig_videos/test"
+        outFolder = '%s/%s' % (args.audioOrigPathAVA, dataType) # "orig_audios/trainval" and "orig_videos/test"
         os.makedirs(outFolder, exist_ok=True)
-        videos = glob.glob("%s/*" % (inpFolder))
+        videos = glob.glob("%s/*" % (inpFolder)) # returns a list of all files and directories in the inpFolder directory.
         for videoPath in tqdm.tqdm(videos):
             audioPath = '%s/%s' % (outFolder, videoPath.split('/')[-1].split('.')[0] + '.wav')
             cmd = (
                 "ffmpeg -y -i %s -async 1 -ac 1 -vn -acodec pcm_s16le -ar 16000 -threads 8 %s -loglevel panic"
                 % (videoPath, audioPath))
             subprocess.call(cmd, shell=True, stdout=None)
-
+    # print("extract_audio completes")
 
 def extract_audio_clips(args):
     # Take 3 minutes to extract the audio clips
     dic = {'train': 'trainval', 'val': 'trainval', 'test': 'test'}
-    for dataType in ['train', 'val', 'test']:
-        df = pandas.read_csv(os.path.join(args.trialPathAVA, '%s_orig.csv' % (dataType)),
+    #for dataType in ['train', 'val', 'test']:
+    for dataType in ['test']:
+        df = pandas.read_csv(os.path.join(args.trialPathAVA, '%s_orig.csv' % (dataType)), # "csv/train_orig,csv", "csv/val_orig,csv", "csv/test_orig,csv",
                              engine='python')
         dfNeg = pandas.concat([df[df['label_id'] == 0], df[df['label_id'] == 2]])
         dfPos = df[df['label_id'] == 1]
@@ -167,7 +172,7 @@ def extract_audio_clips(args):
             audioEnd = int(float(end) * sr)
             audioData = audioFeatures[videoKey][audioStart:audioEnd]
             wavfile.write(insPath, sr, audioData)
-
+    #print("extract_audio clips completes")
 
 def extract_video_clips(args):
     # Take about 2 days to crop the face clips.
@@ -175,8 +180,9 @@ def extract_video_clips(args):
     # If you do not need the data for the test set, you can only deal with the train and val part. That will take 1 day.
     # This procession may have many warning info, you can just ignore it.
     dic = {'train': 'trainval', 'val': 'trainval', 'test': 'test'}
-    for dataType in ['train', 'val', 'test']:
-        df = pandas.read_csv(os.path.join(args.trialPathAVA, '%s_orig.csv' % (dataType)))
+    # for dataType in ['train', 'val', 'test']:
+    for dataType in [ 'test']:
+        df = pandas.read_csv(os.path.join(args.trialPathAVA, '%s_orig.csv' % (dataType)))  # "csv/train_orig,csv", "csv/val_orig,csv", "csv/test_orig,csv",
         dfNeg = pandas.concat([df[df['label_id'] == 0], df[df['label_id'] == 2]])
         dfPos = df[df['label_id'] == 1]
         insNeg = dfNeg['instance_id'].unique().tolist()
@@ -215,3 +221,4 @@ def extract_video_clips(args):
                 face = frame[y1:y2, x1:x2, :]
                 j = j + 1
                 cv2.imwrite(imageFilename, face)
+    #print("extract_video_clips completes")

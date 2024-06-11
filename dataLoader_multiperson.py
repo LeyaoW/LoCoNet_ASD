@@ -109,8 +109,10 @@ class train_loader(object):
         self.visualPath = visualPath
         self.candidate_speakers = num_speakers
         self.path = os.path.join(cfg.DATA.dataPathAVA, "csv")
-        self.entity_data = json.load(open(os.path.join(self.path, 'train_entity.json')))
-        self.ts_to_entity = json.load(open(os.path.join(self.path, 'train_ts.json')))
+        # self.entity_data = json.load(open(os.path.join(self.path, 'train_entity.json')))
+        # self.ts_to_entity = json.load(open(os.path.join(self.path, 'train_ts.json')))
+        self.entity_data = json.load(open(os.path.join(self.path, 'test_entity.json')))
+        self.ts_to_entity = json.load(open(os.path.join(self.path, 'test_ts.json')))
         self.mixLst = open(trialFileName).read().splitlines()
         self.list_length = len(self.mixLst)
         random.shuffle(self.mixLst)
@@ -277,9 +279,11 @@ class val_loader(object):
         self.visualPath = visualPath
         self.candidate_speakers = num_speakers
         self.path = os.path.join(cfg.DATA.dataPathAVA, "csv")
-        self.entity_data = json.load(open(os.path.join(self.path, 'val_entity.json')))
-        self.ts_to_entity = json.load(open(os.path.join(self.path, 'val_ts.json')))
-        self.mixLst = open(trialFileName).read().splitlines()
+        # self.entity_data = json.load(open(os.path.join(self.path, 'val_entity.json')))
+        # self.ts_to_entity = json.load(open(os.path.join(self.path, 'val_ts.json')))
+        self.entity_data = json.load(open(os.path.join(self.path, 'test_entity.json')))
+        self.ts_to_entity = json.load(open(os.path.join(self.path, 'test_ts.json')))
+        self.mixLst = open(trialFileName).read().splitlines() # trialFileName= args.evalTrialAVA = os.path.join(args.trialPathAVA, 'val_loader.csv')="csv/'val_loader.csv'"
 
     def load_single_audio(self, audio, fps, numFrames, audioAug=False, aug_audio=None):
 
@@ -349,6 +353,7 @@ class val_loader(object):
     def __getitem__(self, index):
 
         target_video = self.mixLst[index]
+        #print(self.mixLst[index])
         data = target_video.split('\t')
         fps = float(data[2])
         videoName = data[0][:11]

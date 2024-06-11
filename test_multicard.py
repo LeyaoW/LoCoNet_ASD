@@ -1,11 +1,13 @@
 import time, os, torch, argparse, warnings, glob, pandas, json
 
 from utils.tools import *
-from dlhammer import bootstrap
+from dlhammer.dlhammer import bootstrap
 
 from dataLoader_multiperson import val_loader
 from loconet import loconet
 
+import os
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 class DataPrep():
 
@@ -14,11 +16,12 @@ class DataPrep():
 
     def val_dataloader(self):
         cfg = self.cfg
-        loader = val_loader(cfg, trialFileName = cfg.evalTrialAVA, \
+        loader = val_loader(cfg, trialFileName = cfg.evalTrialAVA, 
                             audioPath     = os.path.join(cfg.audioPathAVA , cfg.evalDataType), \
                             visualPath    = os.path.join(cfg.visualPathAVA, cfg.evalDataType), \
                             num_speakers=cfg.MODEL.NUM_SPEAKERS,
                             )
+        
         valLoader = torch.utils.data.DataLoader(loader,
                                                 batch_size=cfg.VAL.BATCH_SIZE,
                                                 shuffle=False,
@@ -28,7 +31,8 @@ class DataPrep():
 
 def prepare_context_files(cfg):
     path = os.path.join(cfg.DATA.dataPathAVA, "csv")
-    for phase in ["val", "test"]:
+    # for phase in ["val", "test"]:
+    for phase in ["test"]:
         csv_f = f"{phase}_loader.csv"
         csv_orig = f"{phase}_orig.csv"
         entity_f = os.path.join(path, phase + "_entity.json")
@@ -63,31 +67,33 @@ def prepare_context_files(cfg):
                 ts_to_entity[video_id][ts] = []
             ts_to_entity[video_id][ts].append(entity_id)
 
-        with open(entity_f) as f:
+        with open(entity_f, "w") as f:
             json.dump(entity_data, f)
 
-        with open(ts_f) as f:
+        with open(ts_f, "w") as f:
             json.dump(ts_to_entity, f)
 
 
 def main():
     cfg = bootstrap(print_cfg=False)
-    print(cfg)
     epoch = cfg.RESUME_EPOCH
 
     warnings.filterwarnings("ignore")
 
+    # form file paths using cfg
     cfg = init_args(cfg)
+    data = DataPrep(cfg) 
 
-    data = DataPrep(cfg)
+    prepare_context_files(cfg) # dump data in csv file into the json format
 
-    prepare_context_files(cfg)
+    
+    if cfg.downloadAVA == True: 
+        # Download csv, video and audio data. Extract features from video and audio
+        preprocess_AVA(cfg) # Get clips_audio/video files.
+        #quit()
+        
 
-    if cfg.downloadAVA == True:
-        preprocess_AVA(cfg)
-        quit()
-
-    s = loconet(cfg)
+    s = loconet(cfg) # create a model object.
 
     s.loadParameters(cfg.RESUME_PATH)
     mAP = s.evaluate_network(epoch=epoch, loader=data.val_dataloader())
