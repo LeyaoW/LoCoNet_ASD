@@ -2,9 +2,9 @@ import time
 import os
 import sys
 import json
-import random
 import numpy as np
 import torch
+import secrets
 
 def setup_device(gpu_id):
     #set up GPUS
@@ -118,7 +118,7 @@ def save_checkpoint(path,model,key="model"):
 
 def make_deterministic(seed,strict=False):
     #https://github.com/pytorch/pytorch/issues/7068#issuecomment-487907668
-    random.seed(seed)
+    secrets.SystemRandom().seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
