@@ -4,6 +4,7 @@ from multiprocessing import Pool
 from scipy.io import wavfile
 from pydub import AudioSegment
 from tqdm import tqdm
+from security import safe_command
 
 def get_length(input_video):
 	result = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', input_video], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -71,7 +72,7 @@ def generate_TAudio(line, args):
 	end = length_data
 	audio.export(out_audio_path, format="wav")	
 	cmd = "ffmpeg -y -ss %.3f -t %.3f -i %s -i %s -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -shortest %s -loglevel panic"% (start, end - start, video_path, out_audio_path, out_video_path)
-	subprocess.call(cmd, shell=True, stdout=None)
+	safe_command.run(subprocess.call, cmd, shell=True, stdout=None)
 
 	# # Write the txt file
 	start_T, end_T = 0, length_data
@@ -106,7 +107,7 @@ def generate_FAudio(line, args):
 	end = length_data
 	audio.export(out_audio_path, format="wav")	
 	cmd = "ffmpeg -y -ss %.3f -t %.3f -i %s -i %s -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -shortest %s -loglevel panic"% (start, end - start, video_path, out_audio_path, out_video_path)
-	subprocess.call(cmd, shell=True, stdout=None)
+	safe_command.run(subprocess.call, cmd, shell=True, stdout=None)
 
 	# Write the txt file
 	start_T, end_T = 0, 0
@@ -157,7 +158,7 @@ def generate_TFAudio(line, args):
 	end = length_data
 	audio.export(out_audio_path, format="wav")	
 	cmd = "ffmpeg -y -ss %.3f -t %.3f -i %s -i %s -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -shortest %s -loglevel panic"% (start, end - start, video_path, out_audio_path, out_video_path)
-	subprocess.call(cmd, shell=True, stdout=None)
+	safe_command.run(subprocess.call, cmd, shell=True, stdout=None)
 
 	# Write the txt file
 	if seed == 1:
@@ -194,7 +195,7 @@ def generate_TSilence(line, args):
 	audio = audio[int(start * 1000):int(end * 1000)]
 	audio.export(out_audio_path, format="wav")	
 	cmd = "ffmpeg -y -ss %.3f -t %.3f -i %s -i %s -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -shortest %s -loglevel panic"% (start, end - start, video_path, out_audio_path, out_video_path)
-	subprocess.call(cmd, shell=True, stdout=None)
+	safe_command.run(subprocess.call, cmd, shell=True, stdout=None)
 
 	changepoint = int((mid - start) * 100) / 100
 	if type_change == "10":
@@ -260,7 +261,7 @@ def generate_FSilence(line, Flines, args):
 	# Extract the video and audio
 	audio.export(out_audio_path, format="wav")	
 	cmd = "ffmpeg -y -ss %.3f -t %.3f -i %s -i %s -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -shortest %s -loglevel panic"% (start, end - start, video_path, out_audio_path, out_video_path)
-	subprocess.call(cmd, shell=True, stdout=None)
+	safe_command.run(subprocess.call, cmd, shell=True, stdout=None)
 
 	# Write the txt file
 	if seed == 1:
