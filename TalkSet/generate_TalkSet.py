@@ -1,9 +1,10 @@
-import os, glob, subprocess, argparse, sys, numpy, random, math, cv2
+import os, glob, subprocess, argparse, sys, numpy, math, cv2
 from itertools import repeat
 from multiprocessing import Pool
 from scipy.io import wavfile
 from pydub import AudioSegment
 from tqdm import tqdm
+import secrets
 
 def get_length(input_video):
 	result = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', input_video], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -141,13 +142,13 @@ def generate_TFAudio(line, args):
 	audio_F = audio_F[:int(length_data * 1000)]
 
 	# Generate the audio
-	changepoint = int((length_data * 0.25 + length_data * random.random() * 0.5) * 100) / 100
+	changepoint = int((length_data * 0.25 + length_data * secrets.SystemRandom().random() * 0.5) * 100) / 100
 	audio_dict = {}
 	audio_dict['T1'] = audio_T[:changepoint * 1000]
 	audio_dict['T2'] = audio_T[changepoint * 1000:]
 	audio_dict['F1'] = audio_F[:changepoint * 1000]
 	audio_dict['F2'] = audio_F[changepoint * 1000:]
-	seed = random.randint(0,1)
+	seed = secrets.SystemRandom().randint(0,1)
 	if seed == 1:
 		audio = audio_dict['T1'] + audio_dict['F2']
 	else:
@@ -215,11 +216,11 @@ def generate_FSilence(line, Flines, args):
 	start = int(line.split()[1]) / 100
 	end = int(line.split()[2]) / 100
 	length_data = int((end - start) * 100) / 100	
-	changepoint = int((length_data * 0.25 + length_data * random.random() * 0.5) * 100) / 100
-	speech_line = random.choice(Flines)
+	changepoint = int((length_data * 0.25 + length_data * secrets.SystemRandom().random() * 0.5) * 100) / 100
+	speech_line = secrets.choice(Flines)
 	length_speech = float(speech_line.split()[-1])
 	while length_speech < length_data:
-		speech_line = random.choice(Flines)
+		speech_line = secrets.choice(Flines)
 		length_speech = float(speech_line.split()[-1])
 	audio_F_name = speech_line.split()[1][:-4]
 	id1 = audio_F_name.split('/')[0]
@@ -252,7 +253,7 @@ def generate_FSilence(line, Flines, args):
 	audio_dict['T2'] = audio_T[changepoint * 1000:]
 	audio_dict['F1'] = audio_F[:changepoint * 1000]
 	audio_dict['F2'] = audio_F[changepoint * 1000:]
-	seed = random.randint(0,1)
+	seed = secrets.SystemRandom().randint(0,1)
 	if seed == 1:
 		audio = audio_dict['T1'] + audio_dict['F2']
 	else:
@@ -372,7 +373,7 @@ if args.task == 'Fusion':
 				lines.append(line)
 	train_file = open(args.list_out_train, "w")
 	test_file = open(args.list_out_test, "w")
-	random.shuffle(lines)
+	secrets.SystemRandom().shuffle(lines)
 	for num, line in enumerate(lines):
 		data = line.split()
 		if float(data[3]) > 6: # For the data longer than 6s, we cut them into 6s, so that will make training process simple.

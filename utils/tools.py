@@ -1,8 +1,8 @@
 import os, subprocess, glob, pandas, tqdm, cv2, numpy
 from scipy.io import wavfile
-import random
 import torch
 import numpy as np
+import secrets
 
 
 def init_args(args):
@@ -32,7 +32,7 @@ def init_args(args):
 
 def make_deterministic(seed, strict=False):
     #https://github.com/pytorch/pytorch/issues/7068#issuecomment-487907668
-    random.seed(seed)
+    secrets.SystemRandom().seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
