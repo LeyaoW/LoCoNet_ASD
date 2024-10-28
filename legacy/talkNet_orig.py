@@ -6,6 +6,7 @@ import sys, time, numpy, os, subprocess, pandas, tqdm
 
 from loss import lossAV, lossA, lossV
 from model.talkNetModel import talkNetModel
+from security import safe_command
 
 
 class talkNet(nn.Module):
@@ -79,7 +80,7 @@ class talkNet(nn.Module):
         cmd = "python -O utils/get_ava_active_speaker_performance.py -g %s -p %s " % (evalOrig,
                                                                                       evalCsvSave)
         mAP = float(
-            str(subprocess.run(cmd, shell=True, capture_output=True).stdout).split(' ')[2][:5])
+            str(safe_command.run(subprocess.run, cmd, shell=True, capture_output=True).stdout).split(' ')[2][:5])
         return mAP
 
     def saveParameters(self, path):
