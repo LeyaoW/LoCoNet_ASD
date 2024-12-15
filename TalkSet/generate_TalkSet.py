@@ -13,7 +13,7 @@ def read_Vox_lines(file):
 	Tlines, Flines = [], []	
 	with open(file) as f_in:
 		while True:
-			line = f_in.readline()					
+			line = f_in.readline(5_000_000)					
 			if not line:
 				break
 			if int(line[0]):
@@ -26,7 +26,7 @@ def read_LRS3_ST(file):
 	lines = []
 	with open(file) as f_in:
 		while True:
-			line = f_in.readline()
+			line = f_in.readline(5_000_000)
 			if not line:
 				break
 			lines.append(line)
@@ -36,7 +36,7 @@ def read_LRS3_S(file):
 	lines = []
 	with open(file) as f_in:
 		while True:
-			line = f_in.readline()
+			line = f_in.readline(5_000_000)
 			if not line:
 				break
 			start = int(line.split()[1]) / 100
@@ -366,7 +366,7 @@ if args.task == 'Fusion':
 	for name in {'TAudio', 'FAudio', 'TFAudio', 'TSilence', 'FSilence'}:
 		with open(args.list_out + '/' + name + '.txt') as f:
 			while True:
-				line = f.readline()
+				line = f.readline(5_000_000)
 				if not line:
 					break
 				lines.append(line)
