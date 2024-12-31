@@ -132,24 +132,24 @@ def main():
         s = talkNet(epoch=epoch, **vars(args))
 
     mAPs = []
-    scoreFile = open(args.scoreSavePath, "a+")
+    with open(args.scoreSavePath, "a+") as scoreFile:
 
-    while (1):
-        loss, lr = s.train_network(epoch=epoch, loader=trainLoader, **vars(args))
+        while (1):
+            loss, lr = s.train_network(epoch=epoch, loader=trainLoader, **vars(args))
 
-        if epoch % args.testInterval == 0:
-            s.saveParameters(args.modelSavePath + "/model_%04d.model" % epoch)
-            mAPs.append(s.evaluate_network(epoch=epoch, loader=valLoader, **vars(args)))
-            print(time.strftime("%Y-%m-%d %H:%M:%S"),
-                  "%d epoch, mAP %2.2f%%, bestmAP %2.2f%%" % (epoch, mAPs[-1], max(mAPs)))
-            scoreFile.write("%d epoch, LR %f, LOSS %f, mAP %2.2f%%, bestmAP %2.2f%%\n" %
-                            (epoch, lr, loss, mAPs[-1], max(mAPs)))
-            scoreFile.flush()
+            if epoch % args.testInterval == 0:
+                s.saveParameters(args.modelSavePath + "/model_%04d.model" % epoch)
+                mAPs.append(s.evaluate_network(epoch=epoch, loader=valLoader, **vars(args)))
+                print(time.strftime("%Y-%m-%d %H:%M:%S"),
+                      "%d epoch, mAP %2.2f%%, bestmAP %2.2f%%" % (epoch, mAPs[-1], max(mAPs)))
+                scoreFile.write("%d epoch, LR %f, LOSS %f, mAP %2.2f%%, bestmAP %2.2f%%\n" %
+                                (epoch, lr, loss, mAPs[-1], max(mAPs)))
+                scoreFile.flush()
 
-        if epoch >= args.maxEpoch:
-            quit()
+            if epoch >= args.maxEpoch:
+                quit()
 
-        epoch += 1
+            epoch += 1
 
 
 if __name__ == '__main__':
