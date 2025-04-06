@@ -305,10 +305,9 @@ if args.task == 'TAudio':
 	# Generate the video and audio
 	with Pool(args.num_cpu) as p:
 		Tlines_new.append(p.starmap(generate_TAudio, zip(Tlines, repeat(args))))
-	# Write the txt file
-	out_Tlist_file = open(os.path.join(args.list_out, 'TAudio.txt'), "w")
-	for line_new in Tlines_new[0]:
-		out_Tlist_file.write(line_new)
+	with open(os.path.join(args.list_out, 'TAudio.txt'), "w") as out_Tlist_file:
+		for line_new in Tlines_new[0]:
+			out_Tlist_file.write(line_new)
 	print('TAudio Finish')
 
 if args.task == 'FAudio':
@@ -317,11 +316,9 @@ if args.task == 'FAudio':
 	# Generate the video and audio
 	with Pool(args.num_cpu) as p:
 		Flines_new.append(p.starmap(generate_FAudio, zip(Flines, repeat(args))))
-
-	# Write the txt file
-	out_Flist_file = open(os.path.join(args.list_out, 'FAudio.txt'), "w")
-	for line_new in Flines_new[0]:
-		out_Flist_file.write(line_new)
+	with open(os.path.join(args.list_out, 'FAudio.txt'), "w") as out_Flist_file:
+		for line_new in Flines_new[0]:
+			out_Flist_file.write(line_new)
 	print('FAudio Finish')
 
 if args.task == 'TFAudio':
@@ -330,11 +327,9 @@ if args.task == 'TFAudio':
 	# Generate the video and audio
 	with Pool(args.num_cpu) as p:
 		TFlines_new.append(p.starmap(generate_TFAudio, zip(Flines, repeat(args))))
-
-	# Write the txt file
-	out_TFlist_file = open(os.path.join(args.list_out, 'TFAudio.txt'), "w")
-	for line_new in TFlines_new[0]:
-		out_TFlist_file.write(line_new)
+	with open(os.path.join(args.list_out, 'TFAudio.txt'), "w") as out_TFlist_file:
+		for line_new in TFlines_new[0]:
+			out_TFlist_file.write(line_new)
 	print('TFAudio Finish')
 
 if args.task == 'TSilence':	
@@ -342,11 +337,9 @@ if args.task == 'TSilence':
 	TSlines_new = []
 	with Pool(args.num_cpu) as p:
 		TSlines_new.append(p.starmap(generate_TSilence, zip(Slines, repeat(args))))
-	
-	# Write the txt file
-	out_TSlist_file = open(os.path.join(args.list_out, 'TSilence.txt'), "w")
-	for line_new in TSlines_new[0]:
-		out_TSlist_file.write(line_new)
+	with open(os.path.join(args.list_out, 'TSilence.txt'), "w") as out_TSlist_file:
+		for line_new in TSlines_new[0]:
+			out_TSlist_file.write(line_new)
 	print('TSilence Finish')
 
 if args.task == 'FSilence':	
@@ -355,10 +348,9 @@ if args.task == 'FSilence':
 	FSlines_new = []
 	with Pool(args.num_cpu) as p:
 		FSlines_new.append(p.starmap(generate_FSilence, zip(Slines, repeat(Tlines), repeat(args))))
-
-	out_FSlist_file = open(os.path.join(args.list_out, 'FSilence.txt'), "w")
-	for line_new in FSlines_new[0]:
-		out_FSlist_file.write(line_new)
+	with open(os.path.join(args.list_out, 'FSilence.txt'), "w") as out_FSlist_file:
+		for line_new in FSlines_new[0]:
+			out_FSlist_file.write(line_new)
 	print('FSilence Finish')
 
 if args.task == 'Fusion':
@@ -370,22 +362,22 @@ if args.task == 'Fusion':
 				if not line:
 					break
 				lines.append(line)
-	train_file = open(args.list_out_train, "w")
-	test_file = open(args.list_out_test, "w")
-	random.shuffle(lines)
-	for num, line in enumerate(lines):
-		data = line.split()
-		if float(data[3]) > 6: # For the data longer than 6s, we cut them into 6s, so that will make training process simple.
-			line = str(data[0]) +  ' ' + str(data[1]) + ' ' + str(data[2]) + ' ' + \
+	with open(args.list_out_train, "w") as train_file:
+		with open(args.list_out_test, "w") as test_file:
+			random.shuffle(lines)
+			for num, line in enumerate(lines):
+				data = line.split()
+				if float(data[3]) > 6: # For the data longer than 6s, we cut them into 6s, so that will make training process simple.
+					line = str(data[0]) +  ' ' + str(data[1]) + ' ' + str(data[2]) + ' ' + \
 				   str(min(float(data[3]), 6)) + ' ' + str(min(float(data[4]), 6)) + ' ' + \
 				   str(min(float(data[5]), 6)) + ' ' + str(min(float(data[6]), 6)) + ' ' + \
 				   str(min(float(data[7]), 6)) + ' ' + "%06d"%int(num) + '\n'
-		else:
-			line = str(data[0]) +  ' ' + str(data[1]) + ' ' + str(data[2]) + ' ' + \
+				else:
+					line = str(data[0]) +  ' ' + str(data[1]) + ' ' + str(data[2]) + ' ' + \
 				   str(data[3]) + ' ' + str(data[4]) + ' ' + \
 				   str(data[5]) + ' ' + str(data[6]) + ' ' + \
 				   str(data[7]) + ' ' + "%06d"%int(num) + '\n'
-		if num % 30000 < 27000:
-			train_file.write(line)
-		else:
-			test_file.write(line)
+				if num % 30000 < 27000:
+					train_file.write(line)
+				else:
+					test_file.write(line)
