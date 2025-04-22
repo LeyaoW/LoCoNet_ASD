@@ -1,12 +1,13 @@
-import os, torch, numpy, cv2, random, glob, python_speech_features, json, math
+import os, torch, numpy, cv2, glob, python_speech_features, json, math
 from scipy.io import wavfile
 from torchvision.transforms import RandomCrop
 from operator import itemgetter
 from torchvggish import vggish_input, vggish_params, mel_features
+import secrets
 
 
 def overlap(audio, noiseAudio):
-    snr = [random.uniform(-5, 5)]
+    snr = [secrets.SystemRandom().uniform(-5, 5)]
     if len(noiseAudio) < len(audio):
         shortage = len(audio) - len(noiseAudio)
         noiseAudio = numpy.pad(noiseAudio, (0, shortage), 'wrap')
@@ -24,7 +25,7 @@ def load_audio(data, dataPath, numFrames, audioAug, audioSet=None):
     fps = float(data[2])
     audio = audioSet[dataName]
     if audioAug == True:
-        augType = random.randint(0, 1)
+        augType = secrets.SystemRandom().randint(0, 1)
         if augType == 1:
             audio = overlap(dataName, audio, audioSet)
         else:
@@ -68,10 +69,10 @@ def load_visual(data, dataPath, numFrames, visualAug):
     faces = []
     H = 112
     if visualAug == True:
-        new = int(H * random.uniform(0.7, 1))
+        new = int(H * secrets.SystemRandom().uniform(0.7, 1))
         x, y = numpy.random.randint(0, H - new), numpy.random.randint(0, H - new)
-        M = cv2.getRotationMatrix2D((H / 2, H / 2), random.uniform(-15, 15), 1)
-        augType = random.choice(['orig', 'flip', 'crop', 'rotate'])
+        M = cv2.getRotationMatrix2D((H / 2, H / 2), secrets.SystemRandom().uniform(-15, 15), 1)
+        augType = secrets.choice(['orig', 'flip', 'crop', 'rotate'])
     else:
         augType = 'orig'
     for faceFile in sortedFaceFiles[:numFrames]:
@@ -115,11 +116,11 @@ class train_loader(object):
         self.ts_to_entity = json.load(open(os.path.join(self.path, 'test_ts.json')))
         self.mixLst = open(trialFileName).read().splitlines()
         self.list_length = len(self.mixLst)
-        random.shuffle(self.mixLst)
+        secrets.SystemRandom().shuffle(self.mixLst)
 
     def load_single_audio(self, audio, fps, numFrames, audioAug=False, aug_audio=None):
         if audioAug:
-            augType = random.randint(0, 1)
+            augType = secrets.SystemRandom().randint(0, 1)
             if augType == 1:
                 audio = overlap(audio, aug_audio)
             else:
@@ -135,10 +136,10 @@ class train_loader(object):
         faces = []
         H = 112
         if visualAug == True:
-            new = int(H * random.uniform(0.7, 1))
+            new = int(H * secrets.SystemRandom().uniform(0.7, 1))
             x, y = numpy.random.randint(0, H - new), numpy.random.randint(0, H - new)
-            M = cv2.getRotationMatrix2D((H / 2, H / 2), random.uniform(-15, 15), 1)
-            augType = random.choice(['orig', 'flip', 'crop', 'rotate'])
+            M = cv2.getRotationMatrix2D((H / 2, H / 2), secrets.SystemRandom().uniform(-15, 15), 1)
+            augType = secrets.choice(['orig', 'flip', 'crop', 'rotate'])
         else:
             augType = 'orig'
         labels_dict = self.entity_data[videoName][entityName]
@@ -184,15 +185,15 @@ class train_loader(object):
                 context[candidate] = shared_ts
                 chosen_speakers.append(candidate)
         context_speakers = chosen_speakers
-        random.shuffle(context_speakers)
+        secrets.SystemRandom().shuffle(context_speakers)
         if not context_speakers:
             context_speakers.insert(0, target_entity)    # make sure is at 0
             while len(context_speakers) < self.candidate_speakers:
-                context_speakers.append(random.choice(context_speakers))
+                context_speakers.append(secrets.choice(context_speakers))
         elif len(context_speakers) < self.candidate_speakers:
             context_speakers.insert(0, target_entity)    # make sure is at 0
             while len(context_speakers) < self.candidate_speakers:
-                context_speakers.append(random.choice(context_speakers[1:]))
+                context_speakers.append(secrets.choice(context_speakers[1:]))
         else:
             context_speakers.insert(0, target_entity)    # make sure is at 0
             context_speakers = context_speakers[:self.candidate_speakers]
@@ -221,7 +222,7 @@ class train_loader(object):
 
         if self.cfg.TRAIN.AUDIO_AUG:
             other_indices = list(range(0, index)) + list(range(index + 1, self.list_length))
-            augment_entity = self.mixLst[random.choice(other_indices)]
+            augment_entity = self.mixLst[secrets.choice(other_indices)]
             augment_data = augment_entity.split('\t')
             augment_entity = augment_data[0]
             augment_videoname = augment_data[0][:11]
@@ -333,15 +334,15 @@ class val_loader(object):
             # context[candidate] = shared_ts
             # chosen_speakers.append(candidate)
         context_speakers = chosen_speakers
-        random.shuffle(context_speakers)
+        secrets.SystemRandom().shuffle(context_speakers)
         if not context_speakers:
             context_speakers.insert(0, target_entity)    # make sure is at 0
             while len(context_speakers) < self.candidate_speakers:
-                context_speakers.append(random.choice(context_speakers))
+                context_speakers.append(secrets.choice(context_speakers))
         elif len(context_speakers) < self.candidate_speakers:
             context_speakers.insert(0, target_entity)    # make sure is at 0
             while len(context_speakers) < self.candidate_speakers:
-                context_speakers.append(random.choice(context_speakers[1:]))
+                context_speakers.append(secrets.choice(context_speakers[1:]))
         else:
             context_speakers.insert(0, target_entity)    # make sure is at 0
             context_speakers = context_speakers[:self.candidate_speakers]

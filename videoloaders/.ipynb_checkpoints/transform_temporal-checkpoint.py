@@ -1,6 +1,6 @@
 import os
-import random
 import math
+import secrets
 
 
 def temporal_batching_index(fr,length=16):
@@ -89,7 +89,7 @@ def random_temporal_crop(clip,length = 16):
     elif fr==length:
         output =  clip
     else:
-        start=random.randint(0,fr-length)
+        start=secrets.SystemRandom().randint(0,fr-length)
         output =  clip[start : start+length]
     return output[::2]
 

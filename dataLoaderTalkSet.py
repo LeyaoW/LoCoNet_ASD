@@ -1,9 +1,10 @@
-import os, torch, numpy, cv2, imageio, random, python_speech_features
+import os, torch, numpy, cv2, imageio, python_speech_features
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from glob import glob
 from torchvision.transforms import RandomCrop
 from scipy import signal
+import secrets
 
 def get_noise_list(musanPath, rirPath):
 	augment_files = glob(os.path.join(musanPath, '*/*/*/*.wav'))
@@ -18,13 +19,13 @@ def get_noise_list(musanPath, rirPath):
 def augment_wav(audio, aug_type, rir, noiselist):
 	if aug_type == 'rir':
 		rir_gains = numpy.random.uniform(-7,3,1)
-		rir_filts = random.choice(rir)
+		rir_filts = secrets.choice(rir)
 		rir     = numpy.multiply(rir_filts, pow(10, 0.1 * rir_gains))    
 		audio   = signal.convolve(audio, rir, mode='full')[:len(audio)]
 	else:
 		noisecat = aug_type
-		noisefile = random.choice(noiselist[noisecat].copy())
-		snr = [random.uniform({'noise':[0,15],'music':[5,15]}[noisecat][0], {'noise':[0,15],'music':[5,15]}[noisecat][1])]
+		noisefile = secrets.choice(noiselist[noisecat].copy())
+		snr = [secrets.SystemRandom().uniform({'noise':[0,15],'music':[5,15]}[noisecat][0], {'noise':[0,15],'music':[5,15]}[noisecat][1])]
 		_, noiseaudio = wavfile.read(noisefile)
 		if len(noiseaudio) < len(audio):
 			shortage = len(audio) - len(noiseaudio)
@@ -49,7 +50,7 @@ def load_audio(data, data_path, length, start, end, audio_aug, rirlist = None, n
 	_, audio = wavfile.read(audio_file_path)
 
 	if audio_aug == True:
-		augtype = random.randint(0,3)
+		augtype = secrets.SystemRandom().randint(0,3)
 		if augtype == 1: # rir
 			audio = augment_wav(audio, 'rir', rirlist, noiselist)
 		elif augtype == 2:
@@ -81,10 +82,10 @@ def load_video(data, data_path, length, start, end, visual_aug):
 	augtype = 'orig'
 
 	if visual_aug == True:
-		new = int(112*random.uniform(0.7, 1))
+		new = int(112*secrets.SystemRandom().uniform(0.7, 1))
 		x, y = numpy.random.randint(0, 112 - new), numpy.random.randint(0, 112 - new)
-		M = cv2.getRotationMatrix2D((112/2,112/2), random.uniform(-15, 15), 1)
-		augtype = random.choice(['orig', 'flip', 'crop', 'rotate'])
+		M = cv2.getRotationMatrix2D((112/2,112/2), secrets.SystemRandom().uniform(-15, 15), 1)
+		augtype = secrets.choice(['orig', 'flip', 'crop', 'rotate'])
 
 	num_frame = 0
 	while video.isOpened():
@@ -159,11 +160,11 @@ class loader_TalkSet(object):
 		length_total = float(batch_lst[-1].split()[3])
 		length_total = (int(round(length_total * 100)) - int(round(length_total * 100)) % 4) / 100
 		audio_feature, video_feature, labels = [], [], []
-		duration = random.choice([1,2,4,6])
+		duration = secrets.choice([1,2,4,6])
 		#duration = 6
 		length = min(length_total, duration)
 		if length == duration:
-			start = int(round(random.randint(0, round(length_total * 25) - round(length * 25)) * 0.04 * 100)) / 100
+			start = int(round(secrets.SystemRandom().randint(0, round(length_total * 25) - round(length * 25)) * 0.04 * 100)) / 100
 			end = int(round((start + length) * 100)) / 100
 		else:
 			start, end = 0, length
