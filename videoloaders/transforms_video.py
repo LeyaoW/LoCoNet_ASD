@@ -3,8 +3,8 @@
 #!/usr/bin/env python3
 
 import numbers
-import random
 import torch
+import secrets
 
 try:
     import accimage
@@ -75,8 +75,8 @@ class RandomCrop(object):
         if w == tw and h == th:
             return 0, 0, h, w
 
-        i = random.randint(0, h - th)
-        j = random.randint(0, w - tw)
+        i = secrets.SystemRandom().randint(0, h - th)
+        j = secrets.SystemRandom().randint(0, w - tw)
         return i, j, th, tw
 
     def __call__(self, img):
@@ -281,7 +281,7 @@ class RandomHorizontalFlipVideo(object):
         Return:
             clip (torch.tensor): Size is (C, T, H, W)
         """
-        if random.random() < self.p:
+        if secrets.SystemRandom().random() < self.p:
             clip = F.hflip(clip)
         return clip
 
