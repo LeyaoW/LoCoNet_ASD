@@ -9,6 +9,7 @@ from model.talkNetModel import talkNetModel
 
 import pytorch_lightning as pl
 from torch import distributed as dist
+from security import safe_command
 
 
 class talkNet(pl.LightningModule):
@@ -87,7 +88,7 @@ class talkNet(pl.LightningModule):
         cmd = "python -O utils/get_ava_active_speaker_performance.py -g %s -p %s " % (evalOrig,
                                                                                       evalCsvSave)
         mAP = float(
-            str(subprocess.run(cmd, shell=True, capture_output=True).stdout).split(' ')[2][:5])
+            str(safe_command.run(subprocess.run, cmd, shell=True, capture_output=True).stdout).split(' ')[2][:5])
         print("validation mAP: {}".format(mAP))
 
     def saveParameters(self, path):
@@ -142,5 +143,5 @@ class talkNet(pl.LightningModule):
         cmd = "python -O utils/get_ava_active_speaker_performance.py -g %s -p %s " % (evalOrig,
                                                                                       evalCsvSave)
         mAP = float(
-            str(subprocess.run(cmd, shell=True, capture_output=True).stdout).split(' ')[2][:5])
+            str(safe_command.run(subprocess.run, cmd, shell=True, capture_output=True).stdout).split(' ')[2][:5])
         return mAP
